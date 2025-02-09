@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@wppconnect-team/wppconnect": "^1.35.2",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "standard": "^17.1.2"
+  },
+  "scripts": {
+    "lint": "standard"
+  }
+}
