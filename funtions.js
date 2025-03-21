@@ -110,7 +110,7 @@ async function sendUbicacion(phone) {
     console.error('Error al enviar el mensaje:', error);
   }
 
-  
+
 }
 
 async function send_file_base64(phone, base64File, fileName) {
@@ -155,7 +155,7 @@ function start_bot_test(client) {
       //console.log(msg);
       console.log(msg.chatId);
       console.log(msg.sender.id);
-      console.log(typeof(msg));
+      console.log(typeof (msg));
       if (msg.body == '!ping') {
         // Send a new message to the same chat
         client.sendText(msg.from, 'pong');
@@ -165,7 +165,7 @@ function start_bot_test(client) {
         client.reply(msg.from, 'pong', msg.id.toString());
       } else if (msg.body == '!chats') {
         const chats = await client.getAllChats();
-        
+
         console.log("CHATS");
         console.log(chats);
         console.log("CHATS");
@@ -241,4 +241,131 @@ function start_bot_test(client) {
   });
 }
 
-module.exports = { initializeWhatsAppClient, sendMessage, isClientInitialized, isSessionActive ,sendUbicacion , send_file_base64 , send_file};
+//OTRAS FUNCIONES
+const TARGET_PHONE = "51993215845"
+const TARGET_PHONE2 = "51963565310"
+const MESSAGE_TEXT = "SE CAYO LOS 2 SERVIDORES"
+
+function isPortOpen(port) {
+  return new Promise((resolve) => {
+    const net = require("net");
+    const socket = new net.Socket();
+
+    socket.setTimeout(2000); // Timeout de 2 segundos
+
+    socket.on("connect", () => {
+      socket.destroy();
+      resolve(true);
+    });
+
+    socket.on("timeout", () => {
+      socket.destroy();
+      resolve(false);
+    });
+
+    socket.on("error", () => {
+      resolve(false);
+    });
+
+    socket.connect(port, "127.0.0.1");
+  });
+}
+
+
+// Variables globales para llevar el control del estado de la caída
+let serverDownTimestamp = null;
+let hasSentInitial = false;
+let hasSent5Min = false;
+let hasSent10Min = false;
+let hasSent30Min = false;
+
+// Función auxiliar para construir el mensaje completo de estado
+function buildStatusMessage(port5000Open, port5050Open, port8000Open, extra = "") {
+  const line5000 = `${port5000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 5000 BACKEND${extra ? " " + extra : ""}`;
+  const line5050 = `${port5050Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 5050 IMPRESORA${extra ? " " + extra : ""}`;
+  const line8000 = `${port8000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 8000 FROTEND${extra ? " " + extra : ""}`;
+  return `${line5000}\n${line5050}\n${line8000}`;
+}
+
+async function checkPortsAndSendMessage() {
+  try {
+    const port5000Open = await isPortOpen(5000);
+    const port5050Open = await isPortOpen(5050);
+    const port8000Open = await isPortOpen(8000);
+
+    // Se considera que el "servidor" está caído si alguno de los puertos está cerrado.
+    const serverDown = (!port5000Open || !port5050Open || !port8000Open);
+
+    if (serverDown) {
+      // Si es la primera detección de caída, se guarda el timestamp y se envía el mensaje inicial.
+      if (serverDownTimestamp === null) {
+        serverDownTimestamp = Date.now();
+        if (whatsappClient) {
+          const message = buildStatusMessage(port5000Open, port5050Open, port8000Open);
+          console.log("Enviando mensajes iniciales:", message);
+          await sendMessage(TARGET_PHONE, message);
+          await sendMessage(TARGET_PHONE2, message);
+          hasSentInitial = true;
+        }
+      } else {
+        // Se calcula el tiempo transcurrido desde que se detectó la caída.
+        const elapsed = Date.now() - serverDownTimestamp;
+
+        // A los 5 minutos se envía un mensaje (si aún no se envió).
+        if (elapsed >= 5 * 60 * 1000 && !hasSent5Min) {
+          if (whatsappClient) {
+            const message = buildStatusMessage(port5000Open, port5050Open, port8000Open, "- 5 min");
+            console.log("Enviando notificación a los 5 minutos:", message);
+            await sendMessage(TARGET_PHONE, message);
+            await sendMessage(TARGET_PHONE2, message);
+          }
+          hasSent5Min = true;
+        }
+
+        // A los 10 minutos se envía otro mensaje (si aún no se envió).
+        if (elapsed >= 10 * 60 * 1000 && !hasSent10Min) {
+          if (whatsappClient) {
+            const message = buildStatusMessage(port5000Open, port5050Open, port8000Open, "- 10 min");
+            console.log("Enviando notificación a los 10 minutos:", message);
+            await sendMessage(TARGET_PHONE, message);
+            await sendMessage(TARGET_PHONE2, message);
+          }
+          hasSent10Min = true;
+        }
+
+        // A los 30 minutos se envía otro mensaje (si aún no se envió).
+        if (elapsed >= 30 * 60 * 1000 && !hasSent30Min) {
+          if (whatsappClient) {
+            const message = buildStatusMessage(port5000Open, port5050Open, port8000Open, "- 30 min");
+            console.log("Enviando notificación a los 30 minutos:", message);
+            await sendMessage(TARGET_PHONE, message);
+            await sendMessage(TARGET_PHONE2, message);
+          }
+          hasSent30Min = true;
+        }
+      }
+    } else {
+      // Si el servidor vuelve a estar activo y previamente se detectó una caída,
+      // se envía un mensaje de recuperación y se reinician las variables de control.
+      if (serverDownTimestamp !== null) {
+        if (whatsappClient) {
+          const message = buildStatusMessage(port5000Open, port5050Open, port8000Open);
+          console.log("Servidor activo. Enviando mensaje de recuperación:", message);
+          await sendMessage(TARGET_PHONE, message);
+          await sendMessage(TARGET_PHONE2, message);
+        }
+        serverDownTimestamp = null;
+        hasSentInitial = false;
+        hasSent5Min = false;
+        hasSent10Min = false;
+        hasSent30Min = false;
+      }
+    }
+  } catch (error) {
+    console.error("Error en verificación de puertos:", error);
+  }
+}
+
+
+
+module.exports = { initializeWhatsAppClient, sendMessage, isClientInitialized, isSessionActive, sendUbicacion, send_file_base64, send_file, checkPortsAndSendMessage };
