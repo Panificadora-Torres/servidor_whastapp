@@ -283,7 +283,7 @@ let hasSent30Min = false;
 function buildStatusMessage(port5000Open, port5050Open, port8000Open, extra = "") {
   const line5000 = `${port5000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 5000 BACKEND${extra ? " " + extra : ""}`;
   const line5050 = `${port5050Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 5050 IMPRESORA${extra ? " " + extra : ""}`;
-  const line8000 = `${port8000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 8000 FROTEND${extra ? " " + extra : ""}`;
+  const line8000 = `${port8000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 8000  FROTEND${extra ? " " + extra : ""}`;
   return `${line5000}\n${line5050}\n${line8000}`;
 }
 
