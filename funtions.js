@@ -24,7 +24,7 @@ async function initializeWhatsAppClient(sessionName = 'sessionName') {
         console.log('Estado de la sesión: ', statusSession);
         console.log('Nombre de la sesión: ', session);
       },
-      headless: true, // Usar navegador con interfaz gráfica
+      headless: false, // Usar navegador con interfaz gráfica
       devtools: false,
       useChrome: true,
       debug: true, // Habilitar depuración
@@ -46,7 +46,7 @@ async function isSessionActive(sessionName = 'sessionName') {
   try {
     const client = await wppconnect.create({
       session: sessionName,
-      headless: true, // Iniciar en modo headless para no mostrar el navegador
+      headless: false, // Iniciar en modo headless para no mostrar el navegador
       debug: false,  // Deshabilitar la depuración
       logQR: false,  // No mostrar el QR
     });
@@ -283,7 +283,7 @@ let hasSent30Min = false;
 function buildStatusMessage(port5000Open, port5050Open, port8000Open, extra = "") {
   const line5000 = `${port5000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 5000 BACKEND${extra ? " " + extra : ""}`;
   const line5050 = `${port5050Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 5050 IMPRESORA${extra ? " " + extra : ""}`;
-  const line8000 = `${port8000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 8000 FROTEND${extra ? " " + extra : ""}`;
+  const line8000 = `${port8000Open ? "ACTIVO" : "INACTIVO"}\nSERVIDOR 8000  FROTEND${extra ? " " + extra : ""}`;
   return `${line5000}\n${line5050}\n${line8000}`;
 }
 
