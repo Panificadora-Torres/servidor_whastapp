@@ -24,7 +24,7 @@ async function initializeWhatsAppClient(sessionName = 'sessionName') {
         console.log('Estado de la sesión: ', statusSession);
         console.log('Nombre de la sesión: ', session);
       },
-      headless: true, // Usar navegador con interfaz gráfica
+      headless: false, // Usar navegador con interfaz gráfica
       devtools: false,
       useChrome: true,
       debug: true, // Habilitar depuración
@@ -46,7 +46,7 @@ async function isSessionActive(sessionName = 'sessionName') {
   try {
     const client = await wppconnect.create({
       session: sessionName,
-      headless: true, // Iniciar en modo headless para no mostrar el navegador
+      headless: false, // Iniciar en modo headless para no mostrar el navegador
       debug: false,  // Deshabilitar la depuración
       logQR: false,  // No mostrar el QR
     });
