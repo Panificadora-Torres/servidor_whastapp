@@ -9,7 +9,10 @@ const { saveFile, convertFileToBase64 } = require("./archivos_upload");
 const app = express();
 const port = 9090;
 
-app.use(express.json()); // Middleware para parsear JSON en las solicitudes
+
+// Aumenta el límite del body a, por ejemplo, 10MB
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 // Ruta para inicializar el cliente de WhatsApp (si no está iniciado)
 app.get("/initialize", async (req, res) => {
@@ -111,12 +114,8 @@ app.post("/upload", upload, async (req, res) => {
     }
 
     // Archivo subido correctamente
-    const filePath = await saveFile(req.file); // Asegúrate de que saveFile esté correctamente implementado
-    const { fileBase64, fileName } = await convertFileToBase64(filePath); // Asegúrate de que esta función también esté implementada
-
-    console.log("Archivo subido:", req.file);
-    console.log("Número de teléfono:", req.body.phone);
-    console.log("base64 del archivo:", String(fileBase64).substring(0, 10), "\n", "Nombre del archivo:", fileName);
+    const filePath = await saveFile(req.file); 
+    const { fileBase64, fileName } = await convertFileToBase64(filePath); 
 
     // Verificar si el cliente de WhatsApp está inicializado
     if (!isClientInitialized()) {
@@ -132,10 +131,38 @@ app.post("/upload", upload, async (req, res) => {
   }
 });
 
+// Endpoint para recibir y almacenar archivos (solo PDF o imágenes)
+app.post("/upload2", upload, async (req, res) => {
+  try {
+
+    // capturamos el json , que tiene 2 campos , phone y filebase64
+    const { phone, filebase64 ,file_name,mensaje} = req.body;
+    //validar que phone , filebase64 y file_name existan
+    if (!phone || !filebase64 || !file_name) {
+      return res.status(400).json({ error: "Faltan campos" });
+    }
+    //validar que phone sea el siguiente formato comiensa con 51 y 9 digitos
+    if (!phone.match(/^51\d{9}$/)) {
+      return res.status(400).json({ error: "El número de teléfono no es correcto" });
+    }
+    // Verificar si el cliente de WhatsApp está inicializado
+    if (!isClientInitialized()) {
+      return res.status(400).send("Cliente de WhatsApp no inicializado. Primero, inicializa el cliente.");
+    }
+
+    // Enviar el archivo a través de WhatsApp
+    await send_file(phone, filebase64, file_name,mensaje);
+    res.send("Mensaje enviado correctamente.");
+  } catch (error) {
+    console.error("Error al procesar la solicitud:", error);
+    res.status(500).send("Error al enviar el mensaje.");
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Servidor Express escuchando en http://localhost:${port}`);
-  setInterval(checkPortsAndSendMessage, 30000); // Verifica cada 5 segundos
+  //setInterval(checkPortsAndSendMessage, 30000); // Verifica cada 5 segundos
 });
 
 //node app.js

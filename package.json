@@ -9,5 +9,8 @@
   },
   "scripts": {
     "lint": "standard"
+  },
+  "overrides": {
+    "got": "^11.8.5"
   }
 }

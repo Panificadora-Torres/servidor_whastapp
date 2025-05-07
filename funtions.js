@@ -127,14 +127,14 @@ async function send_file_base64(phone, base64File, fileName) {
   }
 }
 
-async function send_file(phone, base64File, fileName) {
+async function send_file(phone, base64File, fileName,mensaje="Aquí está el archivo") {
   if (!whatsappClient) {
     console.error('Cliente no inicializado. Por favor, crea una sesión primero.');
     return;
   }
 
   try {
-    const result = await whatsappClient.sendFileFromBase64(`${phone}@c.us`, base64File, fileName, 'Aquí está el archivo')
+    const result = await whatsappClient.sendFileFromBase64(`${phone}@c.us`, base64File, fileName, mensaje)
     console.log('Mensaje enviado:', result);
   } catch (error) {
     console.error('Error al enviar el mensaje:', error);
@@ -304,7 +304,7 @@ async function checkPortsAndSendMessage() {
           const message = buildStatusMessage(port5000Open, port5050Open, port8000Open);
           console.log("Enviando mensajes iniciales:", message);
           await sendMessage(TARGET_PHONE, message);
-          await sendMessage(TARGET_PHONE2, message);
+          //await sendMessage(TARGET_PHONE2, message);
           hasSentInitial = true;
         }
       } else {
@@ -317,7 +317,7 @@ async function checkPortsAndSendMessage() {
             const message = buildStatusMessage(port5000Open, port5050Open, port8000Open, "- 5 min");
             console.log("Enviando notificación a los 5 minutos:", message);
             await sendMessage(TARGET_PHONE, message);
-            await sendMessage(TARGET_PHONE2, message);
+            //await sendMessage(TARGET_PHONE2, message);
           }
           hasSent5Min = true;
         }
@@ -328,7 +328,7 @@ async function checkPortsAndSendMessage() {
             const message = buildStatusMessage(port5000Open, port5050Open, port8000Open, "- 10 min");
             console.log("Enviando notificación a los 10 minutos:", message);
             await sendMessage(TARGET_PHONE, message);
-            await sendMessage(TARGET_PHONE2, message);
+            //await sendMessage(TARGET_PHONE2, message);
           }
           hasSent10Min = true;
         }
@@ -339,7 +339,7 @@ async function checkPortsAndSendMessage() {
             const message = buildStatusMessage(port5000Open, port5050Open, port8000Open, "- 30 min");
             console.log("Enviando notificación a los 30 minutos:", message);
             await sendMessage(TARGET_PHONE, message);
-            await sendMessage(TARGET_PHONE2, message);
+            //await sendMessage(TARGET_PHONE2, message);
           }
           hasSent30Min = true;
         }
@@ -352,7 +352,7 @@ async function checkPortsAndSendMessage() {
           const message = buildStatusMessage(port5000Open, port5050Open, port8000Open);
           console.log("Servidor activo. Enviando mensaje de recuperación:", message);
           await sendMessage(TARGET_PHONE, message);
-          await sendMessage(TARGET_PHONE2, message);
+          //await sendMessage(TARGET_PHONE2, message);
         }
         serverDownTimestamp = null;
         hasSentInitial = false;

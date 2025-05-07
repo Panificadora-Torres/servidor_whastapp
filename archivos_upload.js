@@ -17,18 +17,21 @@ function saveFile(file) {
 
 
 
-// Función para convertir un archivo en Base64
 function convertFileToBase64(filePath) {
   return new Promise((resolve, reject) => {
-    fs.readFile(filePath, 'base64', (err, data) => {
+    // Validar que el path esté dentro de un directorio seguro (por ejemplo, './uploads')
+    const safeBaseDir = path.resolve('./files');
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(safeBaseDir)) {
+      return reject(new Error('Ruta no permitida'));
+    }
+
+    fs.readFile(resolvedPath, 'base64', (err, data) => {
       if (err) {
-        return reject(err);  // Si ocurre un error, lo rechazamos
+        return reject(err);
       }
 
-      // Extraer el nombre del archivo
-      const fileName = filePath.split('/').pop();  // Nombre del archivo (sin la ruta)
-      
-      // Devolver el resultado como un objeto
+      const fileName = path.basename(filePath); // Compatible cross-platform
       resolve({
         fileBase64: data,
         fileName: fileName
