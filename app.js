@@ -6,6 +6,10 @@ const fs = require("fs");
 const { initializeWhatsAppClient, sendMessage, sendUbicacion, isClientInitialized, isSessionActive, send_file_base64, checkPortsAndSendMessage, send_file } = require("./funtions");
 const { saveFile, convertFileToBase64 } = require("./archivos_upload");
 
+require("dotenv").config(); // Debe ir al inicio del archivo
+const JWT_SECRET = process.env.JWT_SECRET;
+const jwt = require("jsonwebtoken");
+
 const app = express();
 const port = 9090;
 
@@ -134,6 +138,16 @@ app.post("/upload", upload, async (req, res) => {
 // Endpoint para recibir y almacenar archivos (solo PDF o imágenes)
 app.post("/upload2", upload, async (req, res) => {
   try {
+
+    const token = req.headers["authorization"];
+    if (!token) {
+      return res.status(401).json({ error: "Token no proporcionado" });
+    }
+    try {
+      jwt.verify(token, JWT_SECRET, { algorithms: ["HS512"] });
+    } catch (err) {
+      throw new Error("Token inválido o expirado");
+    }
 
     // capturamos el json , que tiene 2 campos , phone y filebase64
     const { phone, filebase64 ,file_name,mensaje} = req.body;
