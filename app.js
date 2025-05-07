@@ -3,7 +3,7 @@ const multer = require("multer");
 const path = require("path");
 
 const fs = require("fs");
-const { initializeWhatsAppClient, sendMessage, sendUbicacion, isClientInitialized, isSessionActive, send_file_base64,checkPortsAndSendMessage, send_file } = require("./funtions");
+const { initializeWhatsAppClient, sendMessage, sendUbicacion, isClientInitialized, isSessionActive, send_file_base64, checkPortsAndSendMessage, send_file } = require("./funtions");
 const { saveFile, convertFileToBase64 } = require("./archivos_upload");
 
 const app = express();
@@ -74,9 +74,6 @@ app.get("/client-status", (req, res) => {
     res.send("Cliente de WhatsApp no está inicializado.");
   }
 });
-
-
-
 
 // Configuración de almacenamiento de archivos
 const storage = multer.diskStorage({
